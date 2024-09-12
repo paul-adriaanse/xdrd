@@ -57,6 +57,20 @@
 #define VERSION       "1.0-git"
 #define DEFAULT_USERS 10
 #define SERIAL_BUFFER 8192
+#define DEFAULT_BAUDRATE 115200
+
+// Function to map baud rate integers to termios baud rate constants
+speed_t get_baudrate_constant(int baudrate) {
+    switch(baudrate) {
+        case 19200:  return B19200;
+        case 38400:  return B38400;
+        case 57600:  return B57600;
+        case 115200: return B115200;
+        default:
+            fprintf(stderr, "error: unsupported baud rate: %d\n", baudrate);
+            exit(EXIT_FAILURE);
+    }
+}
 
 typedef struct user
 {
@@ -138,6 +152,7 @@ void socket_close(int);
 int main(int argc, char* argv[])
 {
     char serial[250] = DEFAULT_SERIAL;
+    int baudrate = DEFAULT_BAUDRATE;
     int port = XDR_TCP_DEFAULT_PORT;
     int c;
 
@@ -182,7 +197,7 @@ int main(int argc, char* argv[])
     }
 #endif
 
-    while((c = getopt(argc, argv, "hbgxt:s:u:p:f:l:")) != -1)
+    while((c = getopt(argc, argv, "hbgxt:s:r:u:p:f:l:")) != -1)
     {
         switch(c)
         {
@@ -213,6 +228,10 @@ int main(int argc, char* argv[])
 #else
             snprintf(serial, sizeof(serial), "%s", optarg);
 #endif
+            break;
+
+        case 'r':
+            baudrate = validate_baudrate(atoi(optarg));
             break;
 
         case 'u':
@@ -246,6 +265,12 @@ int main(int argc, char* argv[])
     if(!server.password || !strlen(server.password))
     {
         fprintf(stderr, "error: no password specified\n");
+        show_usage(argv[0]);
+    }
+
+    if(!is_valid_baudrate(baudrate))
+    {
+        fprintf(stderr, "error: invalid baud rate specified. Must be 19200, 38400, 57600, or 115200.\n");
         show_usage(argv[0]);
     }
 
@@ -314,6 +339,7 @@ void show_usage(char* arg)
 #endif
     printf("options:\n");
     printf("  -s  serial port (default %s)\n", DEFAULT_SERIAL);
+    printf("  -r  serial baudrate (default %d)\n", DEFAULT_BAUDRATE);
     printf("  -t  tcp/ip port (default %d)\n", XDR_TCP_DEFAULT_PORT);
     printf("  -u  max users   (default %d)\n", DEFAULT_USERS);
     printf("  -p  specify password (required)\n");
@@ -661,8 +687,9 @@ void serial_init(char* path)
         exit(EXIT_FAILURE);
     }
 
-    if(cfsetispeed(&options, B115200) || cfsetospeed(&options, B115200))
-    {
+    // Set input/output baud rates using the baudrate variable
+    speed_t baudrate_const = get_baudrate_constant(baudrate);
+    if (cfsetispeed(&options, baudrate_const) || cfsetospeed(&options, baudrate_const)) {
         close(server.serialfd);
         server_log(LOG_ERR, "serial_init: cfsetspeed");
         exit(EXIT_FAILURE);
