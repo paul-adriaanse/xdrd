@@ -54,12 +54,12 @@
 #define DEFAULT_SERIAL "/dev/ttyUSB0"
 #endif
 
-#define VERSION       "1.0-git"
+#define VERSION       "1.1"
 #define DEFAULT_USERS 10
 #define SERIAL_BUFFER 8192
-#define DEFAULT_BAUDRATE B115200
+#define DEFAULT_BAUDRATE 115200
 
-// Function to map baud rate integers to termios baud rate constants
+int baudrate
 speed_t get_baudrate_constant(int baudrate) {
     switch(baudrate) {
         case 19200:  return B19200;
@@ -270,7 +270,7 @@ int main(int argc, char* argv[])
 
     if(!is_valid_baudrate(baudrate))
     {
-        fprintf(stderr, "error: invalid baud rate specified. Must be 19200, 38400, 57600, or 115200.\n");
+        fprintf(stderr, "error: invalid baudrate specified.\n");
         show_usage(argv[0]);
     }
 
