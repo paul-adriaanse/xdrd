@@ -57,7 +57,7 @@
 #define VERSION       "1.0-git"
 #define DEFAULT_USERS 10
 #define SERIAL_BUFFER 8192
-#define DEFAULT_BAUDRATE 115200
+#define DEFAULT_BAUDRATE B115200
 
 typedef struct user
 {
@@ -140,19 +140,6 @@ int main(int argc, char* argv[])
 {
     char serial[250] = DEFAULT_SERIAL;
     int baudrate = DEFAULT_BAUDRATE;
-    // Function to map baud rate integers to termios baud rate constants
-    speed_t get_baudrate_constant(int baudrate) {
-    switch(baudrate) {
-        case 19200:  return B19200;
-        case 38400:  return B38400;
-        case 57600:  return B57600;
-        case 115200: return B115200;
-        default:
-            fprintf(stderr, "error: unsupported baud rate: %d\n", baudrate);
-            exit(EXIT_FAILURE);
-        }
-    }
-
     int port = XDR_TCP_DEFAULT_PORT;
     int c;
 
