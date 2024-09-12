@@ -59,7 +59,7 @@
 #define SERIAL_BUFFER 8192
 #define DEFAULT_BAUDRATE 115200
 
-int baudrate
+int baudrate;
 speed_t get_baudrate_constant(int baudrate) {
     switch(baudrate) {
         case 19200:  return B19200;
