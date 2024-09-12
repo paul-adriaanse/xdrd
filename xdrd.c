@@ -59,19 +59,6 @@
 #define SERIAL_BUFFER 8192
 #define DEFAULT_BAUDRATE 115200
 
-// Function to map baud rate integers to termios baud rate constants
-speed_t get_baudrate_constant(int baudrate) {
-    switch(baudrate) {
-        case 19200:  return B19200;
-        case 38400:  return B38400;
-        case 57600:  return B57600;
-        case 115200: return B115200;
-        default:
-            fprintf(stderr, "error: unsupported baud rate: %d\n", baudrate);
-            exit(EXIT_FAILURE);
-    }
-}
-
 typedef struct user
 {
     int fd;
@@ -670,6 +657,18 @@ void serial_init(char* path)
         exit(EXIT_FAILURE);
     }
 #else
+    // Function to map baud rate integers to termios baud rate constants
+    speed_t get_baudrate_constant(int baudrate) {
+    switch(baudrate) {
+        case 19200:  return B19200;
+        case 38400:  return B38400;
+        case 57600:  return B57600;
+        case 115200: return B115200;
+        default:
+            fprintf(stderr, "error: unsupported baud rate: %d\n", baudrate);
+            exit(EXIT_FAILURE);
+        }
+    }
     if((server.serialfd = open(path, O_RDWR | O_NOCTTY | O_NDELAY | O_CLOEXEC)) < 0)
     {
         server_log(LOG_ERR, "serial_init: open");
